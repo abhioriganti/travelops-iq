@@ -1,5 +1,7 @@
 # TravelOpsIQ
 
+[![CI](https://github.com/abhioriganti/travelops-iq/actions/workflows/ci.yml/badge.svg)](https://github.com/abhioriganti/travelops-iq/actions/workflows/ci.yml)
+
 **Governed travel product and operations analytics, from raw events to
 self-service insights and a read-only AI interface.**
 
@@ -15,7 +17,7 @@ and a constrained Model Context Protocol (MCP) service.
 > no customer data, payment data, real bookings, or production third-party
 > travel-platform access.
 
-## What it demonstrates
+## What it does
 
 - Python ingestion and deterministic synthetic-data generation
 - Snowflake schema design and least-privilege service identities
@@ -33,6 +35,15 @@ and a constrained Model Context Protocol (MCP) service.
   using warehouse or API credentials
 - A local scheduled-refresh command that sequences approved external loads
   before a full dbt build, while keeping credentials in ignored local config
+
+## Live Link and Access
+
+There is intentionally no public web deployment. The interactive ThoughtSpot
+Liveboards and Spotter examples run in a private ThoughtSpot tenant connected
+to a private Snowflake account, and the local MCP service reads credentials
+only from ignored configuration. The screenshots and reproducible runbooks in
+this repository provide the portfolio demonstration without exposing a data
+warehouse, API token, or query endpoint publicly.
 
 ## Continuous integration
 
@@ -194,7 +205,28 @@ src/       synthetic data, ingestion, and MCP application code
 tests/     Python unit tests
 ```
 
-## Reproduce locally
+## Quick Start in Three Steps
+
+1. **Set up local dependencies and secrets.** Create a Python 3.12 virtual
+   environment, install `requirements.txt`, copy `.env.example` to `.env`, and
+   configure `%USERPROFILE%\.dbt\profiles.yml`. Do not commit either local
+   configuration file. See [environment setup](docs/01_setup.md).
+2. **Create the warehouse foundation and initial data.** Run the Snowflake
+   bootstrap scripts, generate deterministic synthetic sources, and load the
+   RAW tables. Follow [Snowflake foundation](docs/03_snowflake_bootstrap.md)
+   through [RAW ingestion](docs/06_load_raw_data.md).
+3. **Build and explore governed analytics.** Run the command below, then
+   connect ThoughtSpot only to the `ANALYTICS` marts and use the setup guide to
+   create the Liveboard and Spotter models.
+
+   ```powershell
+   .\scripts\run_dbt.ps1 -Operation build
+   ```
+
+   See [dbt transformations](docs/07_dbt_staging.md) and
+   [ThoughtSpot setup](docs/09_thoughtspot_setup.md).
+
+## Detailed Setup and Learning Path
 
 Follow the documentation in order:
 
@@ -211,13 +243,37 @@ For the completed five-minute walkthrough, use the
 
 ## Verification evidence
 
-- Synthetic-data unit test: `1 passed`
-- Full dbt build: `69` passing checks
-- MCP query-policy tests: `4 passed`
+- Python unit tests: `21 passed`
+- Full dbt build after the live-data refresh: `101` passing checks
+- GitHub Actions CI: Python tests plus `dbt parse`, with no warehouse or API
+  credentials
 - MCP protocol discovery: three advertised tools
 - End-to-end MCP calls: product summary, operations summary, and daily trend
 
-## Production hardening next steps
+## Problems I faced and solved
+
+| Challenge | Resolution |
+| --- | --- |
+| Preserving realistic data boundaries | Kept the core business-travel dataset deterministic and synthetic; external calls receive only approved coordinates, dates, or anonymous route inputs. |
+| Duffel test-mode constraints | Used a dedicated `duffel_test_` token with only the permission needed to create anonymous offer requests, dynamically selected a future departure date, and documented that sandbox prices are not market-realistic. |
+| Avoiding misleading hotel metrics | Capped Geoapify discovery at 50 properties per city and exposed `is_result_limit_reached` so users cannot interpret discovery counts as complete inventory. |
+| Semantic aggregation correctness | Configured rates, monetary amounts, counts, and distance metrics with appropriate ThoughtSpot aggregations before exposing them to Liveboards and Spotter. |
+| Local automation without hidden cost or secret exposure | Added a fail-closed local refresh script and runbook, but left scheduling opt-in so a portfolio demo does not automatically consume Snowflake credits. |
+
+## Limitations
+
+- Core employee, trip, booking, expense, policy, and support records are
+  synthetic; this is not a production travel platform or a Navan product.
+- Open-Meteo enrichment uses historical observations only and models a weather
+  risk proxy, not actual flight disruption.
+- Duffel data is authenticated sandbox data; it does not represent live prices,
+  schedules, bookings, or payments.
+- Geoapify provides bounded hotel-property discovery metadata only—never room
+  availability, rates, inventory, or booking capability.
+- ThoughtSpot access is private, and the refresh workflow is intentionally
+  manual unless an operator chooses to schedule it locally.
+
+## Production Hardening Next Steps
 
 - Use Snowflake key-pair or workload-identity authentication instead of local
   passwords.
@@ -225,7 +281,12 @@ For the completed five-minute walkthrough, use the
   Streamable HTTP.
 - Extend CI with dependency pinning, model-contract checks, and protected-branch
   requirements.
-- Add freshness monitoring, warehouse cost controls, and alerting.
+- Add freshness monitoring, warehouse resource monitors, and alerting before
+  enabling unattended scheduled refreshes.
+- Expand governed MCP tools for approved flight-offer and hotel-discovery
+  aggregate questions; do not expose arbitrary SQL.
+- Evaluate production travel-provider integrations only after the required
+  commercial contracts, privacy review, and operational controls are in place.
 
 ## Security note
 
