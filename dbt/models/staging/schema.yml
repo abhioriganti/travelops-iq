@@ -75,3 +75,10 @@ models:
           - accepted_values:
               arguments:
                 values: ['test']
+  - name: stg_hotel_properties
+    description: Typed live hotel-property discovery metadata from Geoapify Places.
+    columns:
+      - name: destination_city_code
+        tests: [not_null]
+      - name: place_id
+        tests: [not_null]

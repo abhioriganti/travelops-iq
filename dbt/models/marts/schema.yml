@@ -64,3 +64,12 @@ models:
         tests: [not_null]
       - name: offer_count
         tests: [not_null]
+  - name: mart_destination_hotel_discovery
+    description: Bounded city-center hotel-property discovery summary. It is not a hotel-market inventory or pricing mart.
+    columns:
+      - name: retrieved_at
+        tests: [not_null]
+      - name: discovered_hotel_count
+        tests: [not_null]
+      - name: is_result_limit_reached
+        tests: [not_null]

@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    description: Source-shaped data in Snowflake RAW. Core travel events are synthetic; weather observations come from the public Open-Meteo historical API and flight-offer snapshots come from Duffel's test environment.
+    description: Source-shaped data in Snowflake RAW. Core travel events are synthetic; weather observations come from the public Open-Meteo historical API, hotel properties from Geoapify Places, and flight-offer snapshots from Duffel's test environment.
     database: TRAVEL_ANALYTICS
     schema: RAW
     tables:
@@ -89,3 +89,15 @@ sources:
               - accepted_values:
                   arguments:
                     values: ['duffel_test']
+      - name: raw_hotel_properties
+        description: Bounded external hotel-property discovery records from Geoapify Places. These records do not represent hotel rates, inventory, or bookings.
+        columns:
+          - name: destination_city_code
+            tests: [not_null]
+          - name: place_id
+            tests: [not_null]
+          - name: source
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: ['geoapify_places']
