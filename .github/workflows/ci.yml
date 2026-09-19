@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# This workflow needs only the checked-out repository; it never uses cloud or API secrets.
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Python tests and dbt parse
+    runs-on: ubuntu-latest
+    env:
+      # Placeholder values allow dbt to render the local example profile.
+      # `dbt parse` does not execute models or connect to Snowflake.
+      SNOWFLAKE_ACCOUNT: ci_account
+      SNOWFLAKE_USER: ci_user
+      SNOWFLAKE_PASSWORD: ci_password
+      SNOWFLAKE_ROLE: TRAVEL_ANALYTICS_DEV
+      SNOWFLAKE_WAREHOUSE: TRAVEL_ANALYTICS_XS
+      SNOWFLAKE_DATABASE: TRAVEL_ANALYTICS
+      SNOWFLAKE_SCHEMA: DBT_DEV
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Run Python tests
+        run: python -m pytest -q -p no:cacheprovider
+
+      - name: Parse dbt project
+        run: |
+          mkdir -p "$HOME/.dbt"
+          cp dbt/profiles.yml.example "$HOME/.dbt/profiles.yml"
+          dbt parse --project-dir dbt --profiles-dir "$HOME/.dbt"
