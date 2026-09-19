@@ -1,0 +1,22 @@
+select
+    cast(offer_request_id as varchar) as offer_request_id,
+    cast(offer_id as varchar) as offer_id,
+    upper(cast(origin_iata as varchar)) as origin_iata,
+    upper(cast(destination_iata as varchar)) as destination_iata,
+    cast(departure_date as date) as departure_date,
+    lower(cast(cabin_class as varchar)) as cabin_class,
+    upper(cast(owner_iata as varchar)) as owner_iata,
+    cast(owner_name as varchar) as owner_name,
+    cast(total_amount as number(12, 2)) as total_amount,
+    upper(cast(total_currency as varchar)) as total_currency,
+    cast(tax_amount as number(12, 2)) as tax_amount,
+    upper(cast(tax_currency as varchar)) as tax_currency,
+    cast(segment_count as integer) as segment_count,
+    cast(stop_count as integer) as stop_count,
+    cast(journey_duration_minutes as integer) as journey_duration_minutes,
+    cast(first_departing_at as timestamp_ntz) as first_departing_at,
+    cast(last_expires_at as timestamp_ntz) as last_expires_at,
+    cast(source as varchar) as source,
+    cast(environment as varchar) as environment,
+    cast(retrieved_at as timestamp_ntz) as retrieved_at
+from {{ source('raw', 'raw_flight_offer_snapshots') }}

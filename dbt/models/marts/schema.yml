@@ -57,3 +57,10 @@ models:
         tests: [not_null, unique]
       - name: trips_with_destination_weather
         tests: [not_null]
+  - name: mart_flight_offer_snapshot_summary
+    description: Route-level summary of anonymous Duffel test-mode offers. This is an integration demonstration, not market-pricing analytics.
+    columns:
+      - name: retrieved_at
+        tests: [not_null]
+      - name: offer_count
+        tests: [not_null]
