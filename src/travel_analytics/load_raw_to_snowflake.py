@@ -36,7 +36,7 @@ REQUIRED_ENVIRONMENT_VARIABLES = [
 ]
 
 
-def _connection_settings() -> dict[str, str]:
+def get_snowflake_connection_settings() -> dict[str, str]:
     missing = [name for name in REQUIRED_ENVIRONMENT_VARIABLES if not os.getenv(name)]
     if missing:
         raise RuntimeError(f"Missing required environment variables: {', '.join(missing)}")
@@ -62,7 +62,7 @@ def load_raw_data(input_dir: Path, *, replace: bool = False) -> dict[str, int]:
     loaded_at = datetime.now(timezone.utc).replace(tzinfo=None)
     results: dict[str, int] = {}
 
-    with snowflake.connector.connect(**_connection_settings()) as connection:
+    with snowflake.connector.connect(**get_snowflake_connection_settings()) as connection:
         with connection.cursor() as cursor:
             for table_name, filename in TABLE_FILES.items():
                 frame = pd.read_csv(input_dir / filename)

@@ -67,15 +67,18 @@ def get_city_location(city_code: str) -> CityLocation:
         raise ValueError(f"Unsupported city code: {city_code!r}") from error
 
 
-def build_historical_weather_url(city_code: str, weather_date: date) -> str:
-    """Build the one-day Open-Meteo archive request for a supported city."""
+def build_historical_weather_url(
+    city_code: str, start_date: date, end_date: date | None = None
+) -> str:
+    """Build an Open-Meteo archive request for a supported city and date range."""
     location = get_city_location(city_code)
+    requested_end_date = end_date or start_date
     parameters = urlencode(
         {
             "latitude": location.latitude,
             "longitude": location.longitude,
-            "start_date": weather_date.isoformat(),
-            "end_date": weather_date.isoformat(),
+            "start_date": start_date.isoformat(),
+            "end_date": requested_end_date.isoformat(),
             "daily": ",".join(DAILY_VARIABLES),
             "timezone": "auto",
         }
@@ -105,6 +108,64 @@ def _daily_value(daily: Mapping[str, Any], field: str, weather_date: date) -> An
         raise ValueError(f"Open-Meteo response has no value for daily {field!r}") from error
 
 
+def _normalize_weather_records(
+    location: CityLocation,
+    response: Mapping[str, Any],
+    *,
+    start_date: date,
+    end_date: date,
+) -> list[dict[str, Any]]:
+    daily = response.get("daily")
+    if not isinstance(daily, Mapping):
+        raise ValueError("Open-Meteo response is missing a daily data section")
+
+    records: list[dict[str, Any]] = []
+    current_date = start_date
+    while current_date <= end_date:
+        records.append(
+            {
+                "weather_date": current_date.isoformat(),
+                "location_code": location.code,
+                "location_name": location.name,
+                "country_code": location.country_code,
+                "latitude": response.get("latitude", location.latitude),
+                "longitude": response.get("longitude", location.longitude),
+                "temperature_max_c": _daily_value(daily, "temperature_2m_max", current_date),
+                "precipitation_sum_mm": _daily_value(daily, "precipitation_sum", current_date),
+                "wind_speed_max_kmh": _daily_value(daily, "wind_speed_10m_max", current_date),
+                "weather_code": _daily_value(daily, "weather_code", current_date),
+                "source": "open_meteo_archive",
+            }
+        )
+        current_date = date.fromordinal(current_date.toordinal() + 1)
+    return records
+
+
+def fetch_historical_weather_range(
+    city_code: str,
+    start_date: date,
+    end_date: date,
+    *,
+    timeout_seconds: float = 20.0,
+    request_json: Callable[[str, float], Mapping[str, Any]] = _read_json,
+) -> list[dict[str, Any]]:
+    """Fetch selected daily weather metrics for one project city and date range.
+
+    ``request_json`` is injectable so tests can validate parsing without a
+    network call. The returned record is intentionally narrow and contains no
+    traveler-level information.
+    """
+    if end_date < start_date:
+        raise ValueError("end_date cannot be earlier than start_date")
+
+    location = get_city_location(city_code)
+    url = build_historical_weather_url(location.code, start_date, end_date)
+    response = request_json(url, timeout_seconds)
+    return _normalize_weather_records(
+        location, response, start_date=start_date, end_date=end_date
+    )
+
+
 def fetch_historical_weather(
     city_code: str,
     weather_date: date,
@@ -112,28 +173,11 @@ def fetch_historical_weather(
     timeout_seconds: float = 20.0,
     request_json: Callable[[str, float], Mapping[str, Any]] = _read_json,
 ) -> dict[str, Any]:
-    """Fetch selected daily weather metrics for one project city and date.
-
-    ``request_json`` is injectable so tests can validate parsing without a
-    network call. The returned record is intentionally narrow and contains no
-    traveler-level information.
-    """
-    location = get_city_location(city_code)
-    response = request_json(build_historical_weather_url(location.code, weather_date), timeout_seconds)
-    daily = response.get("daily")
-    if not isinstance(daily, Mapping):
-        raise ValueError("Open-Meteo response is missing a daily data section")
-
-    return {
-        "weather_date": weather_date.isoformat(),
-        "location_code": location.code,
-        "location_name": location.name,
-        "country_code": location.country_code,
-        "latitude": response.get("latitude", location.latitude),
-        "longitude": response.get("longitude", location.longitude),
-        "temperature_max_c": _daily_value(daily, "temperature_2m_max", weather_date),
-        "precipitation_sum_mm": _daily_value(daily, "precipitation_sum", weather_date),
-        "wind_speed_max_kmh": _daily_value(daily, "wind_speed_10m_max", weather_date),
-        "weather_code": _daily_value(daily, "weather_code", weather_date),
-        "source": "open_meteo_archive",
-    }
+    """Fetch selected daily weather metrics for one project city and date."""
+    return fetch_historical_weather_range(
+        city_code,
+        weather_date,
+        weather_date,
+        timeout_seconds=timeout_seconds,
+        request_json=request_json,
+    )[0]

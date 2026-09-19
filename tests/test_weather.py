@@ -7,6 +7,7 @@ from src.travel_analytics.weather import (
     CITY_LOCATIONS,
     build_historical_weather_url,
     fetch_historical_weather,
+    fetch_historical_weather_range,
     get_city_location,
 )
 
@@ -62,6 +63,34 @@ def test_fetch_historical_weather_normalizes_selected_daily_metrics():
         "weather_code": 3,
         "source": "open_meteo_archive",
     }
+
+
+def test_fetch_historical_weather_range_returns_one_record_per_day():
+    response = {
+        "daily": {
+            "time": ["2026-06-04", "2026-06-05"],
+            "temperature_2m_max": [30.1, 27.2],
+            "precipitation_sum": [0.0, 2.4],
+            "wind_speed_10m_max": [19.2, 24.0],
+            "weather_code": [3, 61],
+        }
+    }
+
+    records = fetch_historical_weather_range(
+        "CHI",
+        date(2026, 6, 4),
+        date(2026, 6, 5),
+        request_json=lambda _url, _timeout: response,
+    )
+
+    assert [record["weather_date"] for record in records] == ["2026-06-04", "2026-06-05"]
+    assert records[1]["precipitation_sum_mm"] == 2.4
+    assert records[1]["weather_code"] == 61
+
+
+def test_fetch_historical_weather_range_rejects_reverse_date_range():
+    with pytest.raises(ValueError, match="end_date cannot be earlier"):
+        fetch_historical_weather_range("CHI", date(2026, 6, 5), date(2026, 6, 4))
 
 
 def test_unknown_city_code_is_rejected_before_calling_api():
