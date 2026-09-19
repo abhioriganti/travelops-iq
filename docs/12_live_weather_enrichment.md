@@ -35,7 +35,7 @@ while using the `TRAVEL_ANALYTICS_DEV` role.
 From PowerShell at the repository root:
 
 ```powershell
-.\.venv\Scripts\python.exe .\src\travel_analytics\ingest_live_weather.py --replace
+.\.venv\Scripts\python.exe -m src.travel_analytics.ingest_live_weather --replace
 ```
 
 `--replace` truncates only `RAW_WEATHER_OBSERVATIONS` before loading a fresh
