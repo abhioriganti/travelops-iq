@@ -31,6 +31,8 @@ and a constrained Model Context Protocol (MCP) service.
   explicit non-inventory lineage
 - GitHub Actions CI that runs Python tests and validates dbt parsing without
   using warehouse or API credentials
+- A local scheduled-refresh command that sequences approved external loads
+  before a full dbt build, while keeping credentials in ignored local config
 
 ## Continuous integration
 
@@ -128,6 +130,20 @@ provide hotel rates, availability, room inventory, booking functionality, or
 any claim of market coverage. See the [hotel-property discovery
 runbook](docs/14_live_hotel_property_discovery.md).
 
+## Scheduled refresh
+
+Run all approved live enrichments and rebuild governed marts with:
+
+```powershell
+.\scripts\run_live_data_refresh.ps1
+```
+
+It runs Open-Meteo weather, Duffel **test-mode** offers, Geoapify
+hotel-property discovery, then a full dbt build. By default it replaces each
+external RAW snapshot to prevent accidental accumulation of repeated results.
+The [scheduled-refresh runbook](docs/15_scheduled_live_data_refresh.md)
+includes a dry run, Windows Task Scheduler setup, and security boundaries.
+
 ## Governed AI access
 
 The MCP service is intentionally constrained:
@@ -192,7 +208,8 @@ For the completed five-minute walkthrough, use the
   passwords.
 - Store secrets in a vault and deploy the MCP service behind authenticated
   Streamable HTTP.
-- Add CI for Python tests, dbt tests, and model contracts.
+- Extend CI with dependency pinning, model-contract checks, and protected-branch
+  requirements.
 - Add freshness monitoring, warehouse cost controls, and alerting.
 
 ## Security note
