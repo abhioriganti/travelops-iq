@@ -10,9 +10,10 @@ and a constrained Model Context Protocol (MCP) service.
 
 > Core travel, expense, policy, and support data is deterministic and
 > synthetic. Separate enrichment flows retrieve public historical weather from
-> Open-Meteo and anonymous flight offers from Duffel's test environment. The
-> project contains no customer data, payment data, real bookings, or production
-> third-party travel-platform access.
+> Open-Meteo, live hotel-property discovery metadata from Geoapify Places, and
+> anonymous flight offers from Duffel's test environment. The project contains
+> no customer data, payment data, real bookings, or production third-party
+> travel-platform access.
 
 ## What it demonstrates
 
@@ -26,6 +27,8 @@ and a constrained Model Context Protocol (MCP) service.
   governed travel-risk mart
 - Authenticated Duffel sandbox flight-offer ingestion with explicit test-data
   lineage and no booking workflow
+- Live Geoapify hotel-property discovery with bounded destination searches and
+  explicit non-inventory lineage
 
 ## Architecture
 
@@ -34,6 +37,8 @@ flowchart LR
     A[Python synthetic-data generator] --> B[Snowflake RAW]
     X[Open-Meteo historical API] --> W[Python weather ingestion]
     W --> B
+    Z[Geoapify Places API] --> P[Python hotel-property ingestion]
+    P --> B
     Y[Duffel test API] --> Q[Python flight-offer ingestion]
     Q --> B
     B --> C[dbt STAGING]
@@ -102,6 +107,18 @@ realistic. The governed `MART_FLIGHT_OFFER_SNAPSHOT_SUMMARY` therefore
 demonstrates ingestion and offer-shape analytics only, not live market pricing.
 See the [flight-offer sandbox runbook](docs/13_duffel_flight_offer_sandbox.md).
 
+## Live hotel-property discovery
+
+The optional hotel flow queries Geoapify Places around version-controlled city
+coordinates used by the synthetic trip data. It produces a bounded property
+discovery snapshot in `RAW_HOTEL_PROPERTIES`, then publishes aggregate counts
+and distances in `MART_DESTINATION_HOTEL_DISCOVERY`.
+
+This flow provides live external property metadata only. It does **not**
+provide hotel rates, availability, room inventory, booking functionality, or
+any claim of market coverage. See the [hotel-property discovery
+runbook](docs/14_live_hotel_property_discovery.md).
+
 ## Governed AI access
 
 The MCP service is intentionally constrained:
@@ -119,7 +136,7 @@ The available tools are `get_product_funnel_summary`,
 
 | Area | Tools |
 | --- | --- |
-| Data generation and ingestion | Python, pandas, Faker, Snowflake Connector, Open-Meteo API |
+| Data generation and ingestion | Python, pandas, Faker, Snowflake Connector, Open-Meteo API, Geoapify Places API |
 | Transformation and testing | SQL, dbt, dbt-snowflake |
 | Warehouse | Snowflake |
 | Business intelligence | ThoughtSpot |
