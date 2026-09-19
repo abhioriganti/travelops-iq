@@ -9,9 +9,10 @@ expenses, and support, then makes trusted KPIs available through ThoughtSpot
 and a constrained Model Context Protocol (MCP) service.
 
 > Core travel, expense, policy, and support data is deterministic and
-> synthetic. A separate enrichment flow retrieves public historical weather
-> observations from Open-Meteo. The project contains no customer data and does
-> not integrate with any third-party travel platform.
+> synthetic. Separate enrichment flows retrieve public historical weather from
+> Open-Meteo and anonymous flight offers from Duffel's test environment. The
+> project contains no customer data, payment data, real bookings, or production
+> third-party travel-platform access.
 
 ## What it demonstrates
 
@@ -23,6 +24,8 @@ and a constrained Model Context Protocol (MCP) service.
 - A local MCP server that exposes approved, parameterized aggregate queries
 - Live public-weather ingestion, transparent risk classification, and a
   governed travel-risk mart
+- Authenticated Duffel sandbox flight-offer ingestion with explicit test-data
+  lineage and no booking workflow
 
 ## Architecture
 
@@ -31,6 +34,8 @@ flowchart LR
     A[Python synthetic-data generator] --> B[Snowflake RAW]
     X[Open-Meteo historical API] --> W[Python weather ingestion]
     W --> B
+    Y[Duffel test API] --> Q[Python flight-offer ingestion]
+    Q --> B
     B --> C[dbt STAGING]
     C --> D[dbt INTERMEDIATE]
     D --> E[Snowflake ANALYTICS marts]
@@ -83,6 +88,19 @@ medium/high weather conditions. Risk is a transparent portfolio proxy based on
 weather severity, wind, and precipitation; it is not a claim of actual flight
 disruption. See the [live-weather runbook](docs/12_live_weather_enrichment.md)
 for the source contract and reproducible commands.
+
+## Duffel flight-offer sandbox integration
+
+The optional flight-offer flow authenticates to Duffel using a local
+`duffel_test_` token, submits a minimal anonymous search, and lands the
+returned offers in `RAW_FLIGHT_OFFER_SNAPSHOTS`. It sends only origin,
+destination, departure date, cabin, and one adult passenger type. It does not
+send project records, collect payment details, or create an order.
+
+Duffel labels this environment as a sandbox; its schedules and prices are not
+realistic. The governed `MART_FLIGHT_OFFER_SNAPSHOT_SUMMARY` therefore
+demonstrates ingestion and offer-shape analytics only, not live market pricing.
+See the [flight-offer sandbox runbook](docs/13_duffel_flight_offer_sandbox.md).
 
 ## Governed AI access
 

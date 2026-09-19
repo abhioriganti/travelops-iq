@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    description: Source-shaped data in Snowflake RAW. Core travel events are synthetic; weather observations are retrieved from the public Open-Meteo historical API.
+    description: Source-shaped data in Snowflake RAW. Core travel events are synthetic; weather observations come from the public Open-Meteo historical API and flight-offer snapshots come from Duffel's test environment.
     database: TRAVEL_ANALYTICS
     schema: RAW
     tables:
@@ -72,3 +72,20 @@ sources:
               - accepted_values:
                   arguments:
                     values: ['open_meteo_archive']
+      - name: raw_flight_offer_snapshots
+        description: Anonymous, non-bookable Duffel test-mode flight-offer snapshots. Prices and schedules are sandbox data, not market data.
+        columns:
+          - name: offer_request_id
+            tests: [not_null]
+          - name: offer_id
+            tests: [not_null]
+          - name: environment
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: ['test']
+          - name: source
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: ['duffel_test']
