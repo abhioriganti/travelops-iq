@@ -29,6 +29,15 @@ and a constrained Model Context Protocol (MCP) service.
   lineage and no booking workflow
 - Live Geoapify hotel-property discovery with bounded destination searches and
   explicit non-inventory lineage
+- GitHub Actions CI that runs Python tests and validates dbt parsing without
+  using warehouse or API credentials
+
+## Continuous integration
+
+Every pull request to `main` runs Python unit tests and `dbt parse` through
+GitHub Actions. The workflow uses placeholder Snowflake values only to render
+the example dbt profile; it does not query Snowflake, call external APIs, or
+use repository secrets.
 
 ## Architecture
 
