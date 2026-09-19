@@ -80,6 +80,7 @@ def load_raw_data(input_dir: Path, *, replace: bool = False) -> dict[str, int]:
                     auto_create_table=False,
                     overwrite=False,
                     quote_identifiers=False,
+                    use_logical_type=True,
                 )
                 if not success:
                     raise RuntimeError(f"Snowflake reported an unsuccessful load for {table_name}")

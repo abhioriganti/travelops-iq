@@ -93,6 +93,7 @@ def load_live_weather(*, replace: bool = False) -> int:
             auto_create_table=False,
             overwrite=False,
             quote_identifiers=False,
+            use_logical_type=True,
         )
         if not success:
             raise RuntimeError("Snowflake reported an unsuccessful live-weather load")
