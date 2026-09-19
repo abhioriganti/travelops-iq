@@ -34,6 +34,22 @@ flowchart LR
     G --> H[Codex]
 ```
 
+## Portfolio previews
+
+### ThoughtSpot operations Liveboard
+
+The **Travel Operations Command Center** makes trusted product and operations
+KPIs available as self-service weekly trends.
+
+![TravelOpsIQ ThoughtSpot operations Liveboard](docs/assets/travelopsiq-liveboard.png)
+
+### Read-only MCP analytics interface
+
+Codex discovers the local `travel_analytics` MCP server and invokes only its
+approved product-funnel, operations-summary, and KPI-trend tools.
+
+![TravelOpsIQ MCP product funnel demonstration](docs/assets/travelopsiq-mcp-demo.png)
+
 ## Key analytics outputs
 
 The governed daily marts answer questions such as:
