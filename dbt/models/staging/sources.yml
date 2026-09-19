@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    description: Synthetic source tables landed by the Python ingestion job. No business metrics are defined here.
+    description: Source-shaped data in Snowflake RAW. Core travel events are synthetic; weather observations are retrieved from the public Open-Meteo historical API.
     database: TRAVEL_ANALYTICS
     schema: RAW
     tables:
@@ -60,3 +60,15 @@ sources:
                   arguments:
                     to: source('raw', 'raw_trips')
                     field: trip_id
+      - name: raw_weather_observations
+        description: Public historical weather observed at synthetic trip destinations. No traveler or trip identifiers are sent to the external API.
+        columns:
+          - name: location_code
+            tests: [not_null]
+          - name: weather_date
+            tests: [not_null]
+          - name: source
+            tests:
+              - accepted_values:
+                  arguments:
+                    values: ['open_meteo_archive']

@@ -45,6 +45,7 @@ Select only the `ANALYTICS` schema and these models:
 - `FCT_EXPENSES`
 - `MART_PRODUCT_DAILY`
 - `MART_OPERATIONS_DAILY`
+- `MART_TRAVEL_RISK_DAILY`
 
 ## 4. First self-service questions
 
@@ -55,6 +56,24 @@ After creating the connection and worksheet, answer these before building a Live
 3. Which departments have the highest support-contact rate?
 4. Which policy rule drives the highest out-of-policy spend?
 
+## 5. Live weather model and Liveboard tile
+
+After the live-weather ingestion and dbt build are complete, create a separate
+ThoughtSpot model named `Travel Weather Risk Daily` from
+`MART_TRAVEL_RISK_DAILY`. Keep `DEPARTURE_DATE` as an attribute. Configure
+daily counts and weather-exposed booking value as `SUM`, temperature and
+precipitation as `AVERAGE`, maximum wind speed as `MAXIMUM`, and weather
+impacted trip rate as `AVERAGE`.
+
+Create and pin the following Answer to **Travel Operations Command Center**:
+
+```text
+Average Weather Impacted Trip Rate by Departure Date
+```
+
+ThoughtSpot automatically groups the date series into weekly points. This
+metric is a weather-exposure proxy, not a claim of actual travel disruption.
+
 ## Debugging guide
 
 | Symptom | Likely cause | Fix |
@@ -63,4 +82,5 @@ After creating the connection and worksheet, answer these before building a Live
 | ThoughtSpot cannot see tables | Wrong role/schema, or tables were not selected during connection setup | Confirm role is `TRAVEL_ANALYTICS_BI` and schema is exactly `ANALYTICS`. |
 | Raw tables appear | Too-broad role grants | Stop; review grants with `SHOW GRANTS TO ROLE TRAVEL_ANALYTICS_BI`. |
 | Tables disappear after a dbt rebuild | Missing future-table grant | Rerun the `GRANT SELECT ON FUTURE TABLES` statement. |
+| A new analytics mart is not available in the model editor | Connection metadata has not been refreshed | Open **Connections â†’ Manage tables**, select the new table in `ANALYTICS`, and update the connection. |
 | Queries burn credits while idle | Warehouse is left running | Verify `TRAVEL_ANALYTICS_XS` retains 60-second auto-suspend. |

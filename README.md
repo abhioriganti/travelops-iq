@@ -4,13 +4,14 @@
 self-service insights and a read-only AI interface.**
 
 TravelOpsIQ is an independent, end-to-end analytics engineering portfolio
-project built with synthetic data. It models a business-travel journey across
-booking, policy, spend, expenses, and support, then makes trusted KPIs
-available through ThoughtSpot and a constrained Model Context Protocol (MCP)
-service.
+project. It models a business-travel journey across booking, policy, spend,
+expenses, and support, then makes trusted KPIs available through ThoughtSpot
+and a constrained Model Context Protocol (MCP) service.
 
-> This project uses only deterministic synthetic data. It contains no customer
-> data and does not integrate with any third-party travel platform.
+> Core travel, expense, policy, and support data is deterministic and
+> synthetic. A separate enrichment flow retrieves public historical weather
+> observations from Open-Meteo. The project contains no customer data and does
+> not integrate with any third-party travel platform.
 
 ## What it demonstrates
 
@@ -20,12 +21,16 @@ service.
 - Automated data-quality tests and repeatable local validation
 - ThoughtSpot semantic models and a six-chart operations Liveboard
 - A local MCP server that exposes approved, parameterized aggregate queries
+- Live public-weather ingestion, transparent risk classification, and a
+  governed travel-risk mart
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     A[Python synthetic-data generator] --> B[Snowflake RAW]
+    X[Open-Meteo historical API] --> W[Python weather ingestion]
+    W --> B
     B --> C[dbt STAGING]
     C --> D[dbt INTERMEDIATE]
     D --> E[Snowflake ANALYTICS marts]
@@ -58,10 +63,26 @@ The governed daily marts answer questions such as:
 - How do booking volume and conversion move over time?
 - How much spend occurs outside policy?
 - Which periods have elevated support-contact rates or resolution time?
+- Which historical departure dates had meaningful destination-weather exposure?
 
 The ThoughtSpot **Travel Operations Command Center** includes trends for booked
 trips, in-policy booking rate, out-of-policy spend, search-to-book conversion,
 checkout-to-book conversion, and booked-session volume.
+
+## Live weather enrichment
+
+The optional weather flow enriches synthetic trip destinations with public
+historical observations from the [Open-Meteo Historical Weather
+API](https://open-meteo.com/en/docs/historical-weather-api). It sends only
+version-controlled city coordinates and date ranges to the API—never trip IDs,
+employee IDs, booking details, or expense data.
+
+`MART_TRAVEL_RISK_DAILY` provides daily aggregate metrics including
+weather-impacted trip rate, high-risk trips, and booking value exposed to
+medium/high weather conditions. Risk is a transparent portfolio proxy based on
+weather severity, wind, and precipitation; it is not a claim of actual flight
+disruption. See the [live-weather runbook](docs/12_live_weather_enrichment.md)
+for the source contract and reproducible commands.
 
 ## Governed AI access
 
@@ -80,7 +101,7 @@ The available tools are `get_product_funnel_summary`,
 
 | Area | Tools |
 | --- | --- |
-| Data generation and ingestion | Python, pandas, Faker, Snowflake Connector |
+| Data generation and ingestion | Python, pandas, Faker, Snowflake Connector, Open-Meteo API |
 | Transformation and testing | SQL, dbt, dbt-snowflake |
 | Warehouse | Snowflake |
 | Business intelligence | ThoughtSpot |
