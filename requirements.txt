@@ -1,0 +1,13 @@
+# Install these into a dedicated virtual environment, not system Python.
+# We will pin exact, tested versions before the final demo/release.
+dbt-snowflake
+snowflake-connector-python[pandas]
+pandas
+pyarrow
+faker
+python-dotenv
+pydantic
+pytest
+
+# Used only in the optional MCP lesson.
+mcp

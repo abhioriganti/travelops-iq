@@ -1,0 +1,49 @@
+-- Lesson 3: one-time Snowflake development foundation.
+-- Run while signed in as ACCOUNTADMIN. Do not run this in a production account.
+-- Why: dbt and Python should use a dedicated least-privilege role and a small,
+-- automatically suspended warehouse instead of your powerful admin role.
+
+USE ROLE ACCOUNTADMIN;
+
+CREATE ROLE IF NOT EXISTS TRAVEL_ANALYTICS_DEV
+  COMMENT = 'Development role for the Travel Operations Analytics Lab';
+
+CREATE WAREHOUSE IF NOT EXISTS TRAVEL_ANALYTICS_XS
+  WAREHOUSE_SIZE = 'XSMALL'
+  AUTO_SUSPEND = 60
+  AUTO_RESUME = TRUE
+  INITIALLY_SUSPENDED = TRUE
+  COMMENT = 'Cost-controlled compute for the Travel Operations Analytics Lab';
+
+CREATE DATABASE IF NOT EXISTS TRAVEL_ANALYTICS
+  COMMENT = 'Synthetic travel operations portfolio data only';
+
+CREATE SCHEMA IF NOT EXISTS TRAVEL_ANALYTICS.RAW
+  COMMENT = 'Immutable synthetic source tables loaded by Python';
+
+CREATE SCHEMA IF NOT EXISTS TRAVEL_ANALYTICS.STAGING
+  COMMENT = 'dbt-cleaned, typed source models';
+
+CREATE SCHEMA IF NOT EXISTS TRAVEL_ANALYTICS.INTERMEDIATE
+  COMMENT = 'dbt business-logic models';
+
+CREATE SCHEMA IF NOT EXISTS TRAVEL_ANALYTICS.ANALYTICS
+  COMMENT = 'Governed marts exposed to ThoughtSpot and the MCP service';
+
+CREATE SCHEMA IF NOT EXISTS TRAVEL_ANALYTICS.DBT_DEV
+  COMMENT = 'Safe default schema for dbt development work';
+
+GRANT USAGE, OPERATE ON WAREHOUSE TRAVEL_ANALYTICS_XS TO ROLE TRAVEL_ANALYTICS_DEV;
+GRANT USAGE ON DATABASE TRAVEL_ANALYTICS TO ROLE TRAVEL_ANALYTICS_DEV;
+GRANT USAGE ON ALL SCHEMAS IN DATABASE TRAVEL_ANALYTICS TO ROLE TRAVEL_ANALYTICS_DEV;
+GRANT CREATE TABLE, CREATE VIEW ON ALL SCHEMAS IN DATABASE TRAVEL_ANALYTICS TO ROLE TRAVEL_ANALYTICS_DEV;
+GRANT CREATE STAGE, CREATE FILE FORMAT ON SCHEMA TRAVEL_ANALYTICS.RAW TO ROLE TRAVEL_ANALYTICS_DEV;
+
+-- Replace YOUR_SNOWFLAKE_USERNAME with SELECT CURRENT_USER() exactly, without quotes.
+-- Example: GRANT ROLE TRAVEL_ANALYTICS_DEV TO USER JANE_DOE;
+-- GRANT ROLE TRAVEL_ANALYTICS_DEV TO USER YOUR_SNOWFLAKE_USERNAME;
+
+-- Verification: run this only after the grant above, ideally in a fresh worksheet/session.
+-- USE ROLE TRAVEL_ANALYTICS_DEV;
+-- USE WAREHOUSE TRAVEL_ANALYTICS_XS;
+-- SHOW SCHEMAS IN DATABASE TRAVEL_ANALYTICS;

@@ -1,0 +1,39 @@
+# Secrets and machine-specific configuration
+.env
+.codex/config.toml
+.env.*
+!.env.example
+profiles.yml
+*.pem
+*.p8
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp/
+test_runs/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# dbt build artefacts
+dbt/target/
+dbt/logs/
+dbt_packages/
+
+# Generated data and local development artefacts
+data/generated/
+data/downloads/
+*.duckdb
+logs/
+*.local
+
+# Editor and OS artefacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

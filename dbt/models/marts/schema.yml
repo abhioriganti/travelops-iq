@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: dim_employee
+    description: Conformed employee dimension for governed analytics.
+    columns:
+      - name: employee_id
+        tests: [not_null, unique]
+  - name: fct_trips
+    description: One governed row per booked trip, enriched with policy, support, and expense indicators.
+    columns:
+      - name: trip_id
+        tests: [not_null, unique]
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_employee')
+                field: employee_id
+      - name: is_in_policy
+        tests: [not_null]
+  - name: fct_booking_sessions
+    description: One governed row per booking session for funnel analysis.
+    columns:
+      - name: session_id
+        tests: [not_null, unique]
+      - name: did_book
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+  - name: fct_expenses
+    description: One governed row per submitted expense.
+    columns:
+      - name: expense_id
+        tests: [not_null, unique]
+      - name: trip_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('fct_trips')
+                field: trip_id
+  - name: mart_product_daily
+    description: Daily product funnel KPIs for product managers.
+    columns:
+      - name: session_date
+        tests: [not_null, unique]
+  - name: mart_operations_daily
+    description: Daily travel operations and policy KPIs for operational leaders.
+    columns:
+      - name: booking_date
+        tests: [not_null, unique]

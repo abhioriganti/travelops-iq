@@ -1,0 +1,62 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Synthetic source tables landed by the Python ingestion job. No business metrics are defined here.
+    database: TRAVEL_ANALYTICS
+    schema: RAW
+    tables:
+      - name: raw_employees
+        description: One record per fictional employee.
+        columns:
+          - name: employee_id
+            tests: [not_null, unique]
+      - name: raw_trips
+        description: One record per booked trip.
+        columns:
+          - name: trip_id
+            tests: [not_null, unique]
+          - name: employee_id
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_employees')
+                    field: employee_id
+      - name: raw_booking_events
+        description: One event in a traveler booking journey; trip_id is null for abandoned sessions.
+        columns:
+          - name: event_id
+            tests: [not_null, unique]
+      - name: raw_expenses
+        description: One expense line submitted against a trip.
+        columns:
+          - name: expense_id
+            tests: [not_null, unique]
+          - name: trip_id
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_trips')
+                    field: trip_id
+      - name: raw_policy_evaluations
+        description: One policy evaluation per trip in this source snapshot.
+        columns:
+          - name: policy_evaluation_id
+            tests: [not_null, unique]
+          - name: trip_id
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_trips')
+                    field: trip_id
+      - name: raw_support_cases
+        description: One support case associated with a trip.
+        columns:
+          - name: support_case_id
+            tests: [not_null, unique]
+          - name: trip_id
+            tests:
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_trips')
+                    field: trip_id

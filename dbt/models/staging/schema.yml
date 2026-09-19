@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: stg_employees
+    description: Cleaned employee dimension source at one row per employee.
+    columns:
+      - name: employee_id
+        tests: [not_null, unique]
+  - name: stg_trips
+    description: Cleaned trip source at one row per booked trip.
+    columns:
+      - name: trip_id
+        tests: [not_null, unique]
+      - name: trip_status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['completed', 'booked', 'cancelled']
+  - name: stg_booking_events
+    description: Cleaned booking-funnel events, including unbooked sessions.
+    columns:
+      - name: event_id
+        tests: [not_null, unique]
+      - name: event_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['search_submitted', 'results_viewed', 'checkout_started', 'booking_confirmed']
+  - name: stg_expenses
+    description: Cleaned expense claims.
+    columns:
+      - name: expense_id
+        tests: [not_null, unique]
+      - name: approval_status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['approved', 'submitted']
+  - name: stg_policy_evaluations
+    description: Cleaned policy evaluations.
+    columns:
+      - name: policy_evaluation_id
+        tests: [not_null, unique]
+      - name: policy_result
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['pass', 'fail']
+  - name: stg_support_cases
+    description: Cleaned support records.
+    columns:
+      - name: support_case_id
+        tests: [not_null, unique]

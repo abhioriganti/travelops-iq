@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_trip_enriched
+    description: One trip joined to employee, policy, aggregated expense, and aggregated support metrics.
+    columns:
+      - name: trip_id
+        tests: [not_null, unique]
+      - name: policy_result
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['pass', 'fail']
+  - name: int_booking_funnel_sessions
+    description: One booking-funnel session with ordered journey flags.
+    columns:
+      - name: session_id
+        tests: [not_null, unique]
+      - name: did_search
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: did_book
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]

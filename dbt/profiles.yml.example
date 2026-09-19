@@ -1,0 +1,16 @@
+# Copy this file to %USERPROFILE%\.dbt\profiles.yml (not into the repository).
+# Fill values through environment variables, never hard-code a password.
+travel_operations_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE', 'TRAVEL_ANALYTICS_DEV') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'TRAVEL_ANALYTICS_XS') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'TRAVEL_ANALYTICS') }}"
+      schema: "{{ env_var('SNOWFLAKE_SCHEMA', 'DBT_DEV') }}"
+      threads: 4
+      client_session_keep_alive: false
