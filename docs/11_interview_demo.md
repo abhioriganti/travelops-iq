@@ -2,16 +2,19 @@
 
 ## One-sentence project summary
 
-I built a synthetic travel-operations analytics product: Python generates
-source-shaped data, Snowflake stores it, dbt tests and transforms it into
-governed KPI marts, ThoughtSpot provides self-service dashboards, and a local
-MCP service exposes a small read-only analytics interface to Codex.
+I built a travel-operations analytics product: Python generates deterministic
+source-shaped travel data and enriches it with public historical weather,
+Snowflake stores it, dbt tests and transforms it into governed marts,
+ThoughtSpot provides self-service dashboards, and a local MCP service exposes
+a small read-only analytics interface to Codex.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     A[Python synthetic-data generator] --> B[Snowflake RAW]
+    X[Open-Meteo historical API] --> W[Python weather ingestion]
+    W --> B
     B --> C[dbt STAGING]
     C --> D[dbt INTERMEDIATE]
     D --> E[Snowflake ANALYTICS marts]
@@ -33,16 +36,18 @@ same ones I would use for a real travel platform."
 
 Point to `src/`, `dbt/`, `sql/`, `tests/`, and `docs/` in VS Code.
 
-"Python owns repeatable synthetic ingestion. dbt owns the SQL transformations
-and data tests. I separated RAW, STAGING, INTERMEDIATE, and ANALYTICS schemas
-so that business definitions do not live in the ingestion code."
+"Python owns repeatable synthetic ingestion and a separate public-weather
+enrichment job. dbt owns the SQL transformations and data tests. I separated
+RAW, STAGING, INTERMEDIATE, and ANALYTICS schemas so that business definitions
+do not live in the ingestion code."
 
 Mention verified evidence:
 
 - Python generator test: `1 passed`.
 - dbt full build: `69` passing checks.
-- The six analytics objects include two daily KPI marts:
-  `MART_PRODUCT_DAILY` and `MART_OPERATIONS_DAILY`.
+- The analytics layer includes daily product, operations, and travel-risk
+  marts: `MART_PRODUCT_DAILY`, `MART_OPERATIONS_DAILY`, and
+  `MART_TRAVEL_RISK_DAILY`.
 
 ### 3. Show the ThoughtSpot Liveboard — 60 seconds
 
@@ -50,13 +55,20 @@ Open **Travel Operations Command Center**.
 
 "The Liveboard is built from semantic models over daily marts, not directly
 from raw tables. It shows booking demand, in-policy rate, out-of-policy spend,
-search-to-book conversion, checkout-to-book conversion, and booked-session
-volume."
+search-to-book conversion, checkout-to-book conversion, booked-session volume,
+and weather-exposure trends."
 
 Call out a careful analytical observation:
 
 "The final weekly volume dip is a partial-week artifact at the synthetic data
 boundary, not evidence of a real demand collapse."
+
+Call out the enrichment boundary:
+
+"The travel events remain synthetic. The weather observations come from a
+public historical API and are loaded separately. I send only city coordinates
+and dates to that API—never trip IDs, employee data, or spend. The weather
+risk metric is an exposure proxy, not a claim that flights were disrupted."
 
 ### 4. Show governance and security — 60 seconds
 
@@ -120,6 +132,9 @@ This makes least privilege auditable and limits blast radius.
 - [x] synthetic source data loads to Snowflake.
 - [x] dbt build passes all 69 checks.
 - [x] ThoughtSpot Liveboard contains six KPI trends.
+- [x] Public historical-weather observations land in `RAW` and build into a
+  governed travel-risk mart.
+- [x] ThoughtSpot Liveboard includes a weekly weather-impacted-trip-rate trend.
 - [x] ThoughtSpot uses its dedicated read-only account.
 - [x] MCP role has only five intended grants.
 - [x] MCP policy tests pass.

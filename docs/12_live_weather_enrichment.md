@@ -81,3 +81,11 @@ From PowerShell at the repository root, run:
 ```powershell
 .\scripts\run_dbt.ps1 -Operation build -Select "+mart_travel_risk_daily"
 ```
+
+## Publish the governed output in ThoughtSpot
+
+Refresh the `travel_operations_snowflake` connection in **Manage tables** and
+select `MART_TRAVEL_RISK_DAILY`. Create the `Travel Weather Risk Daily` model,
+then pin **Average Weather Impacted Trip Rate by Departure Date** to the
+**Travel Operations Command Center** Liveboard. This completes the governed
+path from public API data to a self-service weekly trend.
