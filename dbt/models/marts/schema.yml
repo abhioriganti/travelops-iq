@@ -50,3 +50,10 @@ models:
     columns:
       - name: booking_date
         tests: [not_null, unique]
+  - name: mart_travel_risk_daily
+    description: Daily destination-weather exposure for synthetic trips with observed historical weather.
+    columns:
+      - name: departure_date
+        tests: [not_null, unique]
+      - name: trips_with_destination_weather
+        tests: [not_null]

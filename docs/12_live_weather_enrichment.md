@@ -59,8 +59,25 @@ FROM raw_weather_observations
 GROUP BY source;
 ```
 
-## Next transformation step
+## Transform the source with dbt
 
-dbt will clean this source and join destination weather to trips by destination
-city code and departure date. The derived mart will contain only aggregated
-travel-risk metrics for ThoughtSpot and MCP use.
+`stg_weather_observations` standardizes the source types and classifies weather
+as `low`, `medium`, or `high` risk. The classification is a transparent
+portfolio proxy, not a claim of actual flight disruption:
+
+- high: severe WMO weather codes, wind at least 50 km/h, or precipitation at
+  least 15 mm
+- medium: rain, snow, drizzle, wind at least 35 km/h, or precipitation at
+  least 5 mm
+- low: all other observed conditions
+
+`mart_travel_risk_daily` joins destination weather to synthetic trips by
+destination city code and departure date. It exposes daily aggregate travel
+exposure only, including high-risk trips, weather-impacted-trip rate, and
+weather-exposed booking value.
+
+From PowerShell at the repository root, run:
+
+```powershell
+.\scripts\run_dbt.ps1 -Operation build -Select "+mart_travel_risk_daily"
+```

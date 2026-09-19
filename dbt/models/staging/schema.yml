@@ -51,3 +51,15 @@ models:
     columns:
       - name: support_case_id
         tests: [not_null, unique]
+  - name: stg_weather_observations
+    description: Typed Open-Meteo historical observations with a transparent weather-risk classification.
+    columns:
+      - name: location_code
+        tests: [not_null]
+      - name: weather_date
+        tests: [not_null]
+      - name: weather_risk_level
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['low', 'medium', 'high']
