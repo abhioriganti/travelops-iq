@@ -1,4 +1,4 @@
--- Lesson 4: local development identity for dbt.
+-- TravelOpsIQ: local development identity for dbt.
 -- Run as ACCOUNTADMIN in the SAME trial account where TRAVEL_ANALYTICS exists.
 -- Replace the password placeholder before running. Do not save, share, or commit it.
 
@@ -12,7 +12,7 @@ CREATE USER IF NOT EXISTS TRAVEL_ANALYTICS_DBT
   DEFAULT_ROLE = TRAVEL_ANALYTICS_DEV
   DEFAULT_WAREHOUSE = TRAVEL_ANALYTICS_XS
   DEFAULT_NAMESPACE = 'TRAVEL_ANALYTICS.DBT_DEV'
-  COMMENT = 'Local-only dbt identity for the Travel Operations Analytics Lab';
+  COMMENT = 'Local-only dbt identity for TravelOpsIQ';
 
 GRANT ROLE TRAVEL_ANALYTICS_DEV TO USER TRAVEL_ANALYTICS_DBT;
 

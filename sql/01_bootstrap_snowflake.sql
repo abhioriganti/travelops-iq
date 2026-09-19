@@ -1,4 +1,4 @@
--- Lesson 3: one-time Snowflake development foundation.
+-- TravelOpsIQ: one-time Snowflake development foundation.
 -- Run while signed in as ACCOUNTADMIN. Do not run this in a production account.
 -- Why: dbt and Python should use a dedicated least-privilege role and a small,
 -- automatically suspended warehouse instead of your powerful admin role.
@@ -6,14 +6,14 @@
 USE ROLE ACCOUNTADMIN;
 
 CREATE ROLE IF NOT EXISTS TRAVEL_ANALYTICS_DEV
-  COMMENT = 'Development role for the Travel Operations Analytics Lab';
+  COMMENT = 'Development role for TravelOpsIQ';
 
 CREATE WAREHOUSE IF NOT EXISTS TRAVEL_ANALYTICS_XS
   WAREHOUSE_SIZE = 'XSMALL'
   AUTO_SUSPEND = 60
   AUTO_RESUME = TRUE
   INITIALLY_SUSPENDED = TRUE
-  COMMENT = 'Cost-controlled compute for the Travel Operations Analytics Lab';
+  COMMENT = 'Cost-controlled compute for TravelOpsIQ';
 
 CREATE DATABASE IF NOT EXISTS TRAVEL_ANALYTICS
   COMMENT = 'Synthetic travel operations portfolio data only';

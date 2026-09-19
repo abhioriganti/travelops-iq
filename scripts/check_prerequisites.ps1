@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Continue'
 
-Write-Host 'Travel Operations Analytics Lab - local prerequisite check' -ForegroundColor Cyan
+Write-Host 'TravelOpsIQ - local prerequisite check' -ForegroundColor Cyan
 
 $commands = @('git', 'python', 'dbt', 'node')
 foreach ($name in $commands) {

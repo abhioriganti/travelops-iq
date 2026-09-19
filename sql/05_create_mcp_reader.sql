@@ -1,4 +1,4 @@
--- Lesson 10: least-privilege Snowflake identity for the local MCP service.
+-- TravelOpsIQ: least-privilege Snowflake identity for the local MCP service.
 -- Run as ACCOUNTADMIN in this learning account.
 -- Replace the password placeholder before running; never commit or share it.
 

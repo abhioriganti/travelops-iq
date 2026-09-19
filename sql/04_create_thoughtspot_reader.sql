@@ -1,11 +1,11 @@
--- Lesson 9: dedicated read-only Snowflake identity for ThoughtSpot.
+-- TravelOpsIQ: dedicated read-only Snowflake identity for ThoughtSpot.
 -- Run as ACCOUNTADMIN in this learning account.
 -- Replace the password placeholder before running; never commit or share it.
 
 USE ROLE ACCOUNTADMIN;
 
 CREATE ROLE IF NOT EXISTS TRAVEL_ANALYTICS_BI
-  COMMENT = 'Read-only analytics role for ThoughtSpot in the Travel Operations Analytics Lab';
+  COMMENT = 'Read-only analytics role for ThoughtSpot in TravelOpsIQ';
 
 GRANT USAGE ON WAREHOUSE TRAVEL_ANALYTICS_XS TO ROLE TRAVEL_ANALYTICS_BI;
 GRANT USAGE ON DATABASE TRAVEL_ANALYTICS TO ROLE TRAVEL_ANALYTICS_BI;
@@ -21,7 +21,7 @@ CREATE USER IF NOT EXISTS TRAVEL_ANALYTICS_THOUGHTSPOT
   DEFAULT_ROLE = TRAVEL_ANALYTICS_BI
   DEFAULT_WAREHOUSE = TRAVEL_ANALYTICS_XS
   DEFAULT_NAMESPACE = 'TRAVEL_ANALYTICS.ANALYTICS'
-  COMMENT = 'Read-only local ThoughtSpot identity for the Travel Operations Analytics Lab';
+  COMMENT = 'Read-only local ThoughtSpot identity for TravelOpsIQ';
 
 GRANT ROLE TRAVEL_ANALYTICS_BI TO USER TRAVEL_ANALYTICS_THOUGHTSPOT;
 

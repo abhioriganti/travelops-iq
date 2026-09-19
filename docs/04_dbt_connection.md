@@ -49,7 +49,8 @@ New-Item -ItemType Directory -Force "$env:USERPROFILE\.dbt"
 Copy-Item .\dbt\profiles.yml.example "$env:USERPROFILE\.dbt\profiles.yml"
 ```
 
-If the result is `True`, do not overwrite it; keep it and tell the instructor so the existing profile can be merged safely.
+If the result is `True`, do not overwrite it; merge the profile deliberately so
+you do not disrupt an existing dbt project.
 
 Enter your own values in `.env`:
 

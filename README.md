@@ -1,61 +1,120 @@
 # TravelOpsIQ
 
-**Governed travel product and operations analytics.** An interview-ready,
-end-to-end analytics-engineering portfolio project using **Python, SQL,
-Snowflake, dbt, ThoughtSpot**, and a local read-only MCP service.
+**Governed travel product and operations analytics, from raw events to
+self-service insights and a read-only AI interface.**
 
-This project deliberately uses *synthetic data*. It is an independent portfolio
-project, does not use customer data, and does not call private company APIs.
+TravelOpsIQ is an independent, end-to-end analytics engineering portfolio
+project built with synthetic data. It models a business-travel journey across
+booking, policy, spend, expenses, and support, then makes trusted KPIs
+available through ThoughtSpot and a constrained Model Context Protocol (MCP)
+service.
 
-## The business problem
+> This project uses only deterministic synthetic data. It contains no customer
+> data and does not integrate with any third-party travel platform.
 
-Product and Operations need one trusted view of the travel journey:
+## What it demonstrates
 
-- Do travelers find and complete a booking efficiently?
-- How much spend is in policy, out of policy, or avoided through savings?
-- Which suppliers, routes, and support reasons create operational friction?
-- Where should a product manager investigate conversion or compliance drops?
+- Python ingestion and deterministic synthetic-data generation
+- Snowflake schema design and least-privilege service identities
+- dbt staging, intermediate, fact, dimension, and daily mart models
+- Automated data-quality tests and repeatable local validation
+- ThoughtSpot semantic models and a six-chart operations Liveboard
+- A local MCP server that exposes approved, parameterized aggregate queries
 
-The finished product will give stakeholders governed metrics in ThoughtSpot and an optional conversational analytics interface backed only by curated Snowflake views.
+## Architecture
 
-## Learning path
+```mermaid
+flowchart LR
+    A[Python synthetic-data generator] --> B[Snowflake RAW]
+    B --> C[dbt STAGING]
+    C --> D[dbt INTERMEDIATE]
+    D --> E[Snowflake ANALYTICS marts]
+    E --> F[ThoughtSpot models and Liveboard]
+    E --> G[Read-only MCP service]
+    G --> H[Codex]
+```
 
-Work in order. Do not skip the data contract or data-quality stages just to get a dashboard faster.
+## Key analytics outputs
 
-1. **Set up accounts and local tooling** — follow [docs/01_setup.md](docs/01_setup.md).
-2. **Define metrics and source contracts** — follow [docs/02_project_charter.md](docs/02_project_charter.md).
-3. **Generate and load synthetic operational data** with Python.
-4. **Build dbt staging, intermediate, and mart models** in Snowflake.
-5. **Add tests, freshness checks, and quality monitoring.**
-6. **Create ThoughtSpot worksheets and Liveboards.**
-7. **Build a local read-only MCP analytics assistant** over approved marts â€” follow [docs/10_read_only_mcp.md](docs/10_read_only_mcp.md).
-8. **Package the result** — use [docs/11_interview_demo.md](docs/11_interview_demo.md) for the architecture, verified evidence, demo script, and interview talking points.
+The governed daily marts answer questions such as:
 
-Every lesson will include its goal, commands, expected result, likely errors, and how to debug them. We will implement one stage at a time so you understand each decision.
+- Where does the booking funnel lose travelers?
+- How do booking volume and conversion move over time?
+- How much spend occurs outside policy?
+- Which periods have elevated support-contact rates or resolution time?
 
-## Repository layout
+The ThoughtSpot **Travel Operations Command Center** includes trends for booked
+trips, in-policy booking rate, out-of-policy spend, search-to-book conversion,
+checkout-to-book conversion, and booked-session volume.
+
+## Governed AI access
+
+The MCP service is intentionally constrained:
+
+- Its Snowflake role has `USAGE` on the warehouse, database, and analytics
+  schema plus `SELECT` on only two daily KPI marts.
+- It has no access to RAW, STAGING, INTERMEDIATE, or employee-level data.
+- It exposes no arbitrary SQL tool.
+- All dates are validated and all SQL values are parameterized.
+
+The available tools are `get_product_funnel_summary`,
+`get_operations_summary`, and `get_kpi_trend`.
+
+## Technology
+
+| Area | Tools |
+| --- | --- |
+| Data generation and ingestion | Python, pandas, Faker, Snowflake Connector |
+| Transformation and testing | SQL, dbt, dbt-snowflake |
+| Warehouse | Snowflake |
+| Business intelligence | ThoughtSpot |
+| AI integration | MCP Python SDK, Codex |
+| Quality checks | pytest, dbt tests |
+
+## Project structure
 
 ```text
-.
-├── docs/             # business requirements, setup notes, runbooks, data dictionary
-├── src/              # Python ingestion, synthetic-data generation, and MCP service
-├── dbt/              # dbt project: models, tests, macros, and seeds
-├── tests/            # Python tests
-├── scripts/          # safe developer checks and repeatable local commands
-├── data/             # ignored generated files; never commit exports or credentials
-├── requirements.txt  # Python dependencies for this lab
-└── .env.example      # names of required secrets, never their values
+dbt/       dbt models, tests, macros, and source definitions
+docs/      architecture notes, setup runbooks, and demo guide
+scripts/   repeatable developer checks and local commands
+sql/       Snowflake bootstrap and least-privilege role scripts
+src/       synthetic data, ingestion, and MCP application code
+tests/     Python unit tests
 ```
 
-This is an industry-standard separation of concerns: application code, transformation code, documentation, automated tests, and local-only data each have a clear home. The layout will grow only when the next lesson needs it.
+## Reproduce locally
 
-## Start here
+Follow the documentation in order:
 
-Run the prerequisite checker from PowerShell:
+1. [Environment setup](docs/01_setup.md)
+2. [Metric contract](docs/02_project_charter.md)
+3. [Snowflake foundation](docs/03_snowflake_bootstrap.md)
+4. [Python data generation and RAW ingestion](docs/05_synthetic_data.md)
+5. [dbt transformations and governed marts](docs/07_dbt_staging.md)
+6. [ThoughtSpot setup](docs/09_thoughtspot_setup.md)
+7. [Read-only MCP service](docs/10_read_only_mcp.md)
 
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-.\scripts\check_prerequisites.ps1
-```
+For the completed five-minute walkthrough, use the
+[interview demo runbook](docs/11_interview_demo.md).
 
-Then read [docs/01_setup.md](docs/01_setup.md). Do **not** put a Snowflake password, private key, ThoughtSpot token, or any company data in this repository or chat.
+## Verification evidence
+
+- Synthetic-data unit test: `1 passed`
+- Full dbt build: `69` passing checks
+- MCP query-policy tests: `4 passed`
+- MCP protocol discovery: three advertised tools
+- End-to-end MCP calls: product summary, operations summary, and daily trend
+
+## Production hardening next steps
+
+- Use Snowflake key-pair or workload-identity authentication instead of local
+  passwords.
+- Store secrets in a vault and deploy the MCP service behind authenticated
+  Streamable HTTP.
+- Add CI for Python tests, dbt tests, and model contracts.
+- Add freshness monitoring, warehouse cost controls, and alerting.
+
+## Security note
+
+Never commit `.env`, passwords, tokens, generated exports, dbt artifacts, or
+local editor configuration. The included `.gitignore` excludes these files.

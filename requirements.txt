@@ -9,5 +9,5 @@ python-dotenv
 pydantic
 pytest
 
-# Used only in the optional MCP lesson.
+# Used by the local MCP component.
 mcp

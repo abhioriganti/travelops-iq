@@ -1,4 +1,4 @@
-"""Generate deterministic, synthetic source data for the Travel Operations Analytics Lab.
+"""Generate deterministic, synthetic source data for TravelOpsIQ.
 
 The data is intentionally fictional. Its relationships model a travel-product
 journey (search -> booking -> trip -> expense/support/policy) without using
