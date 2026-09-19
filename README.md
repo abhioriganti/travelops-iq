@@ -76,6 +76,21 @@ approved product-funnel, operations-summary, and KPI-trend tools.
 
 ![TravelOpsIQ MCP product funnel demonstration](docs/assets/travelopsiq-mcp-demo.png)
 
+### Natural-language analytics with ThoughtSpot Spotter
+
+Users can ask governed semantic models questions in natural language. In this
+example, Spotter ranks the five weekly departure dates with the greatest gross
+booking value exposed to destination weather:
+
+> “Create a column chart of the 5 weeks with the highest Gross Booking Value
+> Weather Exposed USD by Weekly Departure Date, sorted from highest to lowest.”
+
+The model preserves the project's documented boundary: weather risk is a
+transparent portfolio proxy based on historical destination conditions, not a
+claim of actual flight disruption.
+
+![TravelOpsIQ Spotter weather-exposure analysis](docs/assets/travelopsiq-spotter-weather-exposure.png)
+
 ## Key analytics outputs
 
 The governed daily marts answer questions such as:
@@ -164,7 +179,7 @@ The available tools are `get_product_funnel_summary`,
 | Data generation and ingestion | Python, pandas, Faker, Snowflake Connector, Open-Meteo API, Geoapify Places API |
 | Transformation and testing | SQL, dbt, dbt-snowflake |
 | Warehouse | Snowflake |
-| Business intelligence | ThoughtSpot |
+| Business intelligence | ThoughtSpot Liveboards, Spotter |
 | AI integration | MCP Python SDK, Codex |
 | Quality checks | pytest, dbt tests |
 
